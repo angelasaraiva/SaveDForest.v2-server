@@ -28,7 +28,7 @@ app.post('/register', async (req, res) => {
         const newUser = new User({ email: email, password: password });
         await newUser.save();
 
-        const newUserData = new UserData({ userId: newUser._id });
+        const newUserData = new UserData({ userId: newUser._id, score: 0 });
         await newUserData.save();
 
         res.status(201).send({ userId: newUser._id });
@@ -68,6 +68,7 @@ app.post('/updateScore', async (req, res) => {
     try {
         const { userId, score } = req.body;
 
+        console.log(userId);
         if (!userId || typeof score !== 'number') {
             return res.status(400).json({ error: 'User ID and score are required' });
         }
