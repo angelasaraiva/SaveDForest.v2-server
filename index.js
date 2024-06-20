@@ -68,7 +68,6 @@ app.post('/updateScore', async (req, res) => {
     try {
         const { userId, score } = req.body;
 
-        console.log(userId);
         if (!userId || typeof score !== 'number') {
             return res.status(400).json({ error: 'User ID and score are required' });
         }
