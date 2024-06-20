@@ -6,6 +6,7 @@ const cors = require('cors');
 
 const User = require('./models/User');
 const UserData = require('./models/UserData');
+const SamResult = require('./models/SamResult');
 
 const hashing = require('./password_hash');
 
@@ -33,8 +34,7 @@ app.post('/register', async (req, res) => {
 
         res.status(201).send({ userId: newUser._id });
     } catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).send({ error: 'Error registering user' });
+        res.status(500).send({ error: 'User with this email already exists.' });
     }
 });
 
@@ -82,6 +82,29 @@ app.post('/updateScore', async (req, res) => {
     } catch (error) {
         console.error('Error updating score:', error);
         res.status(500).json({ error: 'Error updating score' });
+    }
+});
+
+// POST route to add SAM result for a user
+app.post('/addSamResult', async (req, res) => {
+    const { userId, testNumber, valence, arousal } = req.body;
+
+    try {
+        // Create new SAM result
+        const newSamResult = new SamResult({
+            userId: userId,
+            testNumber: testNumber,
+            valence: valence,
+            arousal: arousal
+        });
+
+        // Save SAM result to database
+        await newSamResult.save();
+
+        res.status(200).json({ message: 'SAM result added successfully' });
+    } catch (err) {
+        console.error('Error adding SAM result:', err);
+        res.status(500).json({ error: 'Error adding SAM result' });
     }
 });
 
