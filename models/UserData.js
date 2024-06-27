@@ -10,11 +10,7 @@ const UserDataSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    decisions: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'Decision',
-        default: []
-    }
+    decisions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Decision' }]
 }, { collection: 'userData' });
 
 const UserData = mongoose.model('UserData', UserDataSchema);

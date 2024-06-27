@@ -23,6 +23,24 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+// Define endpoint to get userData by userId with decisions
+app.get('/getUserDataById/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // Find userData by userId and populate decisions
+        const userData = await UserData.findOne({ userId }).populate('decisions');
+        if (!userData) {
+            return res.status(404).json({ error: 'User data not found' });
+        }
+
+        res.status(200).json(userData); // Send userData with populated decisions
+    } catch (error) {
+        console.error('Error fetching user data with decisions:', error);
+        res.status(500).json({ error: 'Error fetching user data with decisions' });
+    }
+});
+
 app.post('/register', async (req, res) => {
     try {
         const { email, password } = req.body;
