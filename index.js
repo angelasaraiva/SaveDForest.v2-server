@@ -123,7 +123,7 @@ app.post('/addDecision', async (req, res) => {
         // Add decision ID to user's decisionIds array
         const userData = await UserData.findOneAndUpdate(
             { userId },
-            { $push: { decisionIds: newDecision._id } },
+            { $push: { decisions: newDecision._id } },
             { new: true }
         );
 
