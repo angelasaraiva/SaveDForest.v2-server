@@ -7,6 +7,7 @@ const cors = require('cors');
 const User = require('./models/User');
 const UserData = require('./models/UserData');
 const SamResult = require('./models/SamResult');
+const Decision = require('./models/Decision');
 
 const hashing = require('./password_hash');
 
