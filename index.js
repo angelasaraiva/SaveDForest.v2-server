@@ -108,6 +108,32 @@ app.post('/addSamResult', async (req, res) => {
     }
 });
 
+app.post('/addDecision', async (req, res) => {
+    try {
+        const { userId, name, chosen } = req.body;
+
+        if (!userId || !name || !chosen) {
+            return res.status(400).json({ error: 'User ID, name, and chosen value are required' });
+        }
+
+        // Create new Decision
+        const newDecision = new Decision({ name, chosen });
+        await newDecision.save();
+
+        // Add decision ID to user's decisionIds array
+        const userData = await UserData.findOneAndUpdate(
+            { userId },
+            { $push: { decisionIds: newDecision._id } },
+            { new: true }
+        );
+
+        res.status(200).json({ message: 'Decision added successfully', decision: newDecision });
+    } catch (error) {
+        console.error('Error adding decision:', error);
+        res.status(500).json({ error: 'Error adding decision' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

@@ -1,18 +1,22 @@
 const mongoose = require('mongoose');
 
-const userDataSchema = new mongoose.Schema({
+const UserDataSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
         required: true,
-        unique: true
+        ref: 'User'
     },
     score: {
         type: Number,
         default: 0
+    },
+    decisionIds: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Decision',
+        default: []
     }
-}, { collection: 'userData' });
+});
 
-const UserData = mongoose.model('UserData', userDataSchema);
+const UserData = mongoose.model('UserData', UserDataSchema);
 
 module.exports = UserData;
