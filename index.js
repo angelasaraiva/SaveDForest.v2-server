@@ -129,7 +129,7 @@ app.post('/addSamResult', async (req, res) => {
 
 app.post('/addDecision', async (req, res) => {
     try {
-        const { userId, name, chosen } = req.body;
+        const { userId, name, chosen, type } = req.body;
 
         if (!userId || !name || !chosen) {
             return res.status(400).json({ error: 'User ID, name, and chosen value are required' });

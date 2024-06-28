@@ -8,6 +8,10 @@ const DecisionSchema = new mongoose.Schema({
     chosen: {
         type: String,
         required: true
+    },
+    type: {
+        type: String,
+        required: true
     }
 });
 
