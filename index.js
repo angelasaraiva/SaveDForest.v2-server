@@ -136,7 +136,7 @@ app.post('/addDecision', async (req, res) => {
         }
 
         // Create new Decision
-        const newDecision = new Decision({ name, chosen });
+        const newDecision = new Decision({ name, chosen, type });
         await newDecision.save();
 
         // Add decision ID to user's decisionIds array
