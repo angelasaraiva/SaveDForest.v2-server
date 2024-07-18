@@ -41,6 +41,31 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Login endpoint
+app.put('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid email or password' });
+        }
+
+        // Check password
+        const isMatch = await hashing.verifyPassword(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid email or password' });
+        }
+
+        // Respond with user ID (or a token for real-world applications)
+        res.status(200).json({ message: 'Login successful', userId: user._id });
+    } catch (error) {
+        console.error('Error logging in user:', error);
+        res.status(500).json({ error: 'Error logging in user' });
+    }
+});
+
 // POST route to add SAM result for a user
 app.post('/addSamResult', async (req, res) => {
     const { userId, testNumber, valence, arousal } = req.body;
@@ -115,31 +140,6 @@ app.put('/updateScore', async (req, res) => {
 });
 
 // -------------------------- GET endpoints ------------------------ //
-
-// Login endpoint
-app.get('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        // Find user by email
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ error: 'Invalid email or password' });
-        }
-
-        // Check password
-        const isMatch = await hashing.verifyPassword(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: 'Invalid email or password' });
-        }
-
-        // Respond with user ID (or a token for real-world applications)
-        res.status(200).json({ message: 'Login successful', userId: user._id });
-    } catch (error) {
-        console.error('Error logging in user:', error);
-        res.status(500).json({ error: 'Error logging in user' });
-    }
-});
 
 // Define endpoint to get userData by userId with decisions
 app.get('/getUserDataById/:userId', async (req, res) => {
