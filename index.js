@@ -118,7 +118,7 @@ app.post('/addDecision', async (req, res) => {
 // -------------------------- PUT endpoints ------------------------ //
 
 // Endpoint to update user score
-app.put('/updateScore', async (req, res) => {
+app.post('/updateScore', async (req, res) => {
     try {
         const { userId, score } = req.body;
 
