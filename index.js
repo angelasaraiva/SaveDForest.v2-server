@@ -23,23 +23,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Define endpoint to get userData by userId with decisions
-app.get('/getUserDataById/:userId', async (req, res) => {
-    try {
-        const userId = req.params.userId;
-
-        // Find userData by userId and populate decisions
-        const userData = await UserData.findOne({ userId }).populate('decisions');
-        if (!userData) {
-            return res.status(404).json({ error: 'User data not found' });
-        }
-
-        res.status(200).json(userData); // Send userData with populated decisions
-    } catch (error) {
-        console.error('Error fetching user data with decisions:', error);
-        res.status(500).json({ error: 'Error fetching user data with decisions' });
-    }
-});
+// -------------------------- POST endpoints ------------------------ //
 
 app.post('/register', async (req, res) => {
     try {
@@ -54,53 +38,6 @@ app.post('/register', async (req, res) => {
         res.status(201).send({ userId: newUser._id });
     } catch (error) {
         res.status(500).send({ error: 'User with this email already exists.' });
-    }
-});
-
-// Login endpoint
-app.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        // Find user by email
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ error: 'Invalid email or password' });
-        }
-
-        // Check password
-        const isMatch = await hashing.verifyPassword(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ error: 'Invalid email or password' });
-        }
-
-        // Respond with user ID (or a token for real-world applications)
-        res.status(200).json({ message: 'Login successful', userId: user._id });
-    } catch (error) {
-        console.error('Error logging in user:', error);
-        res.status(500).json({ error: 'Error logging in user' });
-    }
-});
-
-// Endpoint to update user score
-app.post('/updateScore', async (req, res) => {
-    try {
-        const { userId, score } = req.body;
-
-        if (!userId || typeof score !== 'number') {
-            return res.status(400).json({ error: 'User ID and score are required' });
-        }
-
-        const userData = await UserData.findOneAndUpdate(
-            { userId },
-            { $set: { score } },
-            { new: true, upsert: true }
-        );
-
-        res.status(200).json({ message: 'Score updated successfully', userData });
-    } catch (error) {
-        console.error('Error updating score:', error);
-        res.status(500).json({ error: 'Error updating score' });
     }
 });
 
@@ -152,6 +89,131 @@ app.post('/addDecision', async (req, res) => {
         res.status(500).json({ error: 'Error adding decision' });
     }
 });
+
+// -------------------------- PUT endpoints ------------------------ //
+
+// Endpoint to update user score
+app.put('/updateScore', async (req, res) => {
+    try {
+        const { userId, score } = req.body;
+
+        if (!userId || typeof score !== 'number') {
+            return res.status(400).json({ error: 'User ID and score are required' });
+        }
+
+        const userData = await UserData.findOneAndUpdate(
+            { userId },
+            { $set: { score } },
+            { new: true, upsert: true }
+        );
+
+        res.status(200).json({ message: 'Score updated successfully', userData });
+    } catch (error) {
+        console.error('Error updating score:', error);
+        res.status(500).json({ error: 'Error updating score' });
+    }
+});
+
+// -------------------------- GET endpoints ------------------------ //
+
+// Login endpoint
+app.get('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid email or password' });
+        }
+
+        // Check password
+        const isMatch = await hashing.verifyPassword(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid email or password' });
+        }
+
+        // Respond with user ID (or a token for real-world applications)
+        res.status(200).json({ message: 'Login successful', userId: user._id });
+    } catch (error) {
+        console.error('Error logging in user:', error);
+        res.status(500).json({ error: 'Error logging in user' });
+    }
+});
+
+// Define endpoint to get userData by userId with decisions
+app.get('/getUserDataById/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // Find userData by userId and populate decisions
+        const userData = await UserData.findOne({ userId }).populate('decisions');
+        if (!userData) {
+            return res.status(404).json({ error: 'User data not found' });
+        }
+
+        res.status(200).json(userData); // Send userData with populated decisions
+    } catch (error) {
+        console.error('Error fetching user data with decisions:', error);
+        res.status(500).json({ error: 'Error fetching user data with decisions' });
+    }
+});
+
+// -------------------------- DELETE endpoints ------------------------ //
+
+// Endpoint to delete decisions for a user
+app.delete('/deleteDecisions', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+
+        // Find UserData and get the list of decision IDs
+        const userData = await UserData.findOne({ userId });
+
+        if (!userData) {
+            return res.status(404).json({ error: 'UserData not found' });
+        }
+
+        // Extract decision IDs from the UserData
+        const decisionIds = userData.decisions;
+
+        // Remove decision IDs from the UserData collection
+        userData.decisions = [];
+        await userData.save();
+
+        // Remove decisions from the Decision collection using the extracted decision IDs
+        await Decision.deleteMany({ _id: { $in: decisionIds } });
+
+        res.status(200).json({ message: 'Decisions deleted successfully', userData });
+    } catch (error) {
+        console.error('Error deleting decisions:', error);
+        res.status(500).json({ error: 'Error deleting decisions' });
+    }
+});
+
+// Endpoint to delete SAM results for a user
+app.delete('/deleteSamResults', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+
+        // Delete SAM results for the user
+        await SamResult.deleteMany({ userId });
+
+        res.status(200).json({ message: 'SAM results deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting SAM results:', error);
+        res.status(500).json({ error: 'Error deleting SAM results' });
+    }
+});
+
+// ----------------------------------------------------------------- //
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
